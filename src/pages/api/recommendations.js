@@ -86,22 +86,38 @@ export default async function handler(req, res) {
     }
 
     if (movies.length < 5 && genreId) {
-      const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreId}&language=ro-RO&sort_by=popularity.desc&page=1`;
+      const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreId}&language=en-EN&sort_by=popularity.desc&page=1`;
       const response = await fetch(url);
       const data = await response.json();
       movies.push(...data.results);
     }
 
-    const recommendations = movies
-      .filter((movie) => movie.overview && movie.overview.trim() !== "")
-      .slice(0, 10)
-      .map((movie) => ({
-        id: movie.id,
-        title: movie.title,
-        overview: movie.overview,
-        image: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
-        rating: movie.vote_average
-      }));
+    const recommendations = await Promise.all(
+      movies
+        .filter((movie) => movie.overview && movie.overview.trim() !== "")
+        .slice(0, 10)
+        .map(async (movie) => {
+          const videoRes = await fetch(
+            `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${apiKey}&language=en-EN`
+          );
+          const videoData = await videoRes.json();
+          const trailer = videoData.results?.find(
+            (v) => v.type === "Trailer" && v.site === "YouTube"
+          );
+    
+          return {
+            id: movie.id,
+            title: movie.title,
+            overview: movie.overview,
+            image: movie.poster_path
+              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+              : null,
+            rating: movie.vote_average,
+            trailerUrl: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null,
+          };
+        })
+    );
+    
 
     res.status(200).json({ movies: recommendations });
   } catch (error) {

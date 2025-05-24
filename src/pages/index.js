@@ -32,6 +32,11 @@ export default function Home() {
   const validateMood = () => mood.trim() === "" || moodList.includes(mood.toLowerCase());
 
   const handleSubmit = async () => {
+    if (!genre && !mood && !seen) {
+      alert("Te rugăm să alegi cel puțin un filtru pentru recomandări.");
+      return;
+    }
+    
     if (!validateMood()) return alert("Introduceți o stare validă.");
     setLoading(true);
     const params = new URLSearchParams();
@@ -84,6 +89,17 @@ export default function Home() {
                 <h2 className="text-xl font-bold">{movie.title}</h2>
                 <p className="text-sm text-gray-700 mb-2">⭐ {movie.rating}/10</p>
                 <p className="text-sm">{movie.overview}</p>
+                {movie.trailerUrl && (
+  <a
+    href={movie.trailerUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-2 block text-center bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg text-sm"
+  >
+    🎥 Vezi trailer
+  </a>
+)}
+
                 <button onClick={async () => {
                   const res = await fetch("/api/favorites", {
                     method: "POST",
