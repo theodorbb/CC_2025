@@ -20,26 +20,30 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-100 text-gray-900 font-poppins">
       <header className="bg-white shadow py-5 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-3xl font-bold text-indigo-700 text-center sm:text-left">
-            🎬 Companion
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-indigo-700 flex items-center gap-2">
+            🎬 <span>Companion</span>
           </h1>
-          <nav className="flex flex-wrap justify-center gap-6 text-base font-medium">
-            <Link href="/" className="hover:text-indigo-600">Acasă</Link>
-            <Link href="/search" className="hover:text-indigo-600">Caută</Link>
-            <SignedIn>
-              <Link href="/favorites" className="hover:text-indigo-600">
-                Filme Salvate {favoritesCount > 0 && `(${favoritesCount})`}
-              </Link>
-            </SignedIn>
-          </nav>
-          <div className="flex items-center gap-3">
-            <SignedIn>
-              <UserButton redirectUrl="/" />
-            </SignedIn>
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
+
+          <div className="flex items-center gap-6">
+            <nav className="flex gap-6 text-base font-medium">
+              <Link href="/" className="hover:text-indigo-600">Acasă</Link>
+              <Link href="/search" className="hover:text-indigo-600">Caută</Link>
+              <SignedIn>
+                <Link href="/favorites" className="hover:text-indigo-600">
+                  Filme Salvate {favoritesCount > 0 && `(${favoritesCount})`}
+                </Link>
+              </SignedIn>
+            </nav>
+            
+            <div className="flex items-center gap-3">
+              <SignedIn>
+                <UserButton redirectUrl="/" />
+              </SignedIn>
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+            </div>
           </div>
         </div>
       </header>
