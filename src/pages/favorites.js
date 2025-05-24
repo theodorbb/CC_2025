@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import Layout from "@/components/Layout";
 
 export default function Favorites() {
+  const { user } = useUser();
+  const userId = user?.id;
+
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadFavorites = async () => {
-    const res = await fetch("/api/favorites");
+    if (!userId) return;
+
+    const res = await fetch(`/api/favorites?userId=${userId}`);
     const data = await res.json();
     setFavorites(data.favorites || []);
     setLoading(false);
@@ -16,18 +22,22 @@ export default function Favorites() {
     const res = await fetch("/api/favorites", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id, userId }),
     });
 
     if (res.ok) loadFavorites();
     else alert("Eroare la ștergere.");
   };
 
-  useEffect(() => { loadFavorites(); }, []);
+  useEffect(() => {
+    loadFavorites();
+  }, [userId]);
+
+  if (!userId) return null;
 
   return (
     <Layout>
-      <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">Filme favorite</h1>
+      <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">🎬 Filme favorite</h1>
       {loading ? (
         <p className="text-center text-gray-600">Se încarcă...</p>
       ) : favorites.length === 0 ? (
@@ -51,4 +61,4 @@ export default function Favorites() {
       )}
     </Layout>
   );
-} 
+}

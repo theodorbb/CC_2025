@@ -1,36 +1,39 @@
 import { getCollection } from "../../../utils/functions";
+import { ObjectId } from "mongodb";
 
 const COLLECTION_NAME = "favorites";
 
 export default async function handler(req, res) {
-  try {
-    const collection = await getCollection(COLLECTION_NAME);
+  const collection = await getCollection(COLLECTION_NAME);
 
-    if (req.method === "GET") {
-      const all = await collection.find().toArray();
-      return res.status(200).json({ favorites: all });
-    }
+  if (req.method === "GET") {
+    const { userId } = req.query;
+    if (!userId) return res.status(401).json({ message: "Missing userId" });
 
-    if (req.method === "POST") {
-      const movie = req.body;
-      if (!movie.id) return res.status(400).json({ message: "ID lipsă" });
-
-      const existing = await collection.findOne({ id: movie.id });
-      if (existing) return res.status(409).json({ message: "Deja există" });
-
-      await collection.insertOne(movie);
-      return res.status(201).json({ message: "Salvat cu succes" });
-    }
-
-    if (req.method === "DELETE") {
-      const { id } = req.body;
-      await collection.deleteOne({ id });
-      return res.status(200).json({ message: "Șters" });
-    }
-
-    return res.status(405).end();
-  } catch (err) {
-    console.error("EROARE:", err);
-    return res.status(500).json({ message: "Eroare internă", error: err.message });
+    const favorites = await collection.find({ userId }).toArray();
+    return res.status(200).json({ favorites });
   }
+
+  if (req.method === "POST") {
+    const { userId, ...movie } = req.body;
+    if (!userId) return res.status(401).json({ message: "Missing userId" });
+
+    const existing = await collection.findOne({ userId, id: movie.id });
+    if (existing) {
+      return res.status(400).json({ message: "Filmul este deja salvat" });
+    }
+
+    await collection.insertOne({ ...movie, userId });
+    return res.status(201).json({ message: "Salvat cu succes" });
+  }
+
+  if (req.method === "DELETE") {
+    const { id, userId } = req.body;
+    if (!userId) return res.status(401).json({ message: "Missing userId" });
+
+    await collection.deleteOne({ userId, id });
+    return res.status(200).json({ message: "Șters cu succes" });
+  }
+
+  return res.status(405).json({ message: "Metodă neacceptată" });
 }
