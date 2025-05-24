@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Layout from "@/components/Layout";
 
 const moodList = ["trist", "fericit", "plictisit", "romantic", "nervos", "curios", "visător", "leneș", "anxios", "nostalgic", "motivat", "relaxat", "euforic", "obosit", "singur", "îndrăgostit", "disperat", "energetic", "rebel", "ciudat", "gânditor", "focusat", "speriat", "încrezător", "calm", "confuz", "dezamăgit", "melancolic", "hiperactiv", "creativ", "entuziasmat"];
@@ -47,10 +47,10 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg space-y-6">
+      <div className="bg-white p-6 rounded-2xl shadow-lg space-y-6">
         <div>
           <label className="block font-medium mb-1">Gen preferat</label>
-          <select className="w-full border p-3 rounded-lg bg-white dark:bg-gray-700 dark:text-white" value={genre} onChange={(e) => setGenre(e.target.value)}>
+          <select className="w-full border p-3 rounded-lg" value={genre} onChange={(e) => setGenre(e.target.value)}>
             <option value="">Selectează un gen (opțional)</option>
             {genreOptions.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
           </select>
@@ -58,7 +58,7 @@ export default function Home() {
 
         <div>
           <label className="block font-medium mb-1">Cum te simți?</label>
-          <input type="text" className="w-full border p-3 rounded-lg bg-white dark:bg-gray-700 dark:text-white" placeholder="Ex: trist, plictisit, entuziasmat..." value={mood} onChange={(e) => handleMoodInput(e.target.value)} list="mood-options" />
+          <input type="text" className="w-full border p-3 rounded-lg" placeholder="Ex: trist, plictisit, entuziasmat..." value={mood} onChange={(e) => handleMoodInput(e.target.value)} list="mood-options" />
           <datalist id="mood-options">
             {moodSuggestions.map((m, i) => <option key={i} value={m} />)}
           </datalist>
@@ -66,7 +66,7 @@ export default function Home() {
 
         <div>
           <label className="block font-medium mb-1">Ce filme ai văzut recent?</label>
-          <input type="text" className="w-full border p-3 rounded-lg bg-white dark:bg-gray-700 dark:text-white" placeholder="Ex: Titanic, Avatar" value={seen} onChange={(e) => setSeen(e.target.value)} />
+          <input type="text" className="w-full border p-3 rounded-lg" placeholder="Ex: Titanic, Avatar" value={seen} onChange={(e) => setSeen(e.target.value)} />
         </div>
 
         <button onClick={handleSubmit} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition">
@@ -78,11 +78,11 @@ export default function Home() {
       {!loading && movies.length > 0 && (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-10">
           {movies.map((movie) => (
-            <div key={movie.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl transition overflow-hidden">
+            <div key={movie.id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition overflow-hidden">
               {movie.image && <img src={movie.image} alt={movie.title} className="w-full h-72 object-cover" />}
               <div className="p-4">
                 <h2 className="text-xl font-bold">{movie.title}</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-300 mb-2">⭐ {movie.rating}/10</p>
+                <p className="text-sm text-gray-700 mb-2">⭐ {movie.rating}/10</p>
                 <p className="text-sm">{movie.overview}</p>
                 <button onClick={async () => {
                   const res = await fetch("/api/favorites", {
