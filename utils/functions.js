@@ -1,6 +1,17 @@
-import { connectToDatabase } from "../lib/mongodb";
+import { MongoClient } from "mongodb";
 
-export const getCollection = async collectionName => {
-	const {database,} = await connectToDatabase();
-	return database.collection(collectionName);
-};
+const uri = process.env.NEXT_ATLAS_URI;
+const dbName = process.env.NEXT_ATLAS_DATABASE;
+
+let client;
+let db;
+
+export async function getCollection(collectionName) {
+  if (!client || !client.isConnected?.()) {
+    client = new MongoClient(uri);
+    await client.connect();
+    db = client.db(dbName);
+  }
+
+  return db.collection(collectionName);
+}
