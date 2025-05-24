@@ -71,12 +71,12 @@ export default async function handler(req, res) {
     if (seen) {
       const seenList = seen.split(",").map((s) => s.trim());
       for (const title of seenList) {
-        const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&language=ro-RO`);
+        const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&language=en-EN`);
         const searchData = await searchRes.json();
         const movie = searchData.results?.[0];
 
         if (movie) {
-          const similarRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${apiKey}&language=ro-RO`);
+          const similarRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${apiKey}&language=en-EN`);
           const similarData = await similarRes.json();
           if (similarData.results) {
             movies.push(...similarData.results);
