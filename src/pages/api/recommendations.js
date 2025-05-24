@@ -60,7 +60,6 @@ export default async function handler(req, res) {
   try {
     let genre = rawGenre;
 
-    // dacă nu e dat genul, dar e dat mood
     if (!genre && mood) {
       const moodKey = mood.trim().toLowerCase();
       genre = moodToGenre[moodKey] || "drama";
@@ -69,17 +68,14 @@ export default async function handler(req, res) {
     const genreId = genreMap[genre?.toLowerCase()];
     let movies = [];
 
-    // dacă avem filme "văzute"
     if (seen) {
       const seenList = seen.split(",").map((s) => s.trim());
       for (const title of seenList) {
-        // Căutăm filmul după nume
         const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&language=ro-RO`);
         const searchData = await searchRes.json();
         const movie = searchData.results?.[0];
 
         if (movie) {
-          // Luăm filme similare
           const similarRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${apiKey}&language=ro-RO`);
           const similarData = await similarRes.json();
           if (similarData.results) {
@@ -89,7 +85,6 @@ export default async function handler(req, res) {
       }
     }
 
-    // Dacă nu am primit nimic din seen sau nu avem destule, completăm cu gen
     if (movies.length < 5 && genreId) {
       const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreId}&language=ro-RO&sort_by=popularity.desc&page=1`;
       const response = await fetch(url);
@@ -97,7 +92,6 @@ export default async function handler(req, res) {
       movies.push(...data.results);
     }
 
-    // Filtrăm filmele care chiar au descriere în română
     const recommendations = movies
       .filter((movie) => movie.overview && movie.overview.trim() !== "")
       .slice(0, 10)
