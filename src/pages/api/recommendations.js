@@ -59,65 +59,68 @@ export default async function handler(req, res) {
 
   try {
     let genre = rawGenre;
+    const moodKey = mood?.trim().toLowerCase();
+    const moodGenre = moodToGenre[moodKey];
 
-    if (!genre && mood) {
-      const moodKey = mood.trim().toLowerCase();
-      genre = moodToGenre[moodKey] || "drama";
-    }
+    const genreSet = new Set();
+    if (genre) genreSet.add(genreMap[genre.toLowerCase()]);
+    if (moodGenre) genreSet.add(genreMap[moodGenre.toLowerCase()]);
 
-    const genreId = genreMap[genre?.toLowerCase()];
-    let movies = [];
+    const genreParam = [...genreSet].join(",");
+
+    const movieSet = new Map();
 
     if (seen) {
       const seenList = seen.split(",").map((s) => s.trim());
       for (const title of seenList) {
-        const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&language=en-EN`);
+        const searchRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&language=ro-RO`);
         const searchData = await searchRes.json();
         const movie = searchData.results?.[0];
 
         if (movie) {
-          const similarRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${apiKey}&language=en-EN`);
+          const similarRes = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=${apiKey}&language=ro-RO`);
           const similarData = await similarRes.json();
-          if (similarData.results) {
-            movies.push(...similarData.results);
-          }
+          similarData.results?.forEach((m) => {
+            if (!movieSet.has(m.id)) movieSet.set(m.id, m);
+          });
         }
       }
     }
 
-    if (movies.length < 5 && genreId) {
-      const url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreId}&language=en-EN&sort_by=popularity.desc&page=1`;
-      const response = await fetch(url);
+    if (genreParam) {
+      const discoverUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreParam}&language=ro-RO&sort_by=popularity.desc&page=1`;
+      const response = await fetch(discoverUrl);
       const data = await response.json();
-      movies.push(...data.results);
+      data.results.forEach((m) => {
+        if (!movieSet.has(m.id)) movieSet.set(m.id, m);
+      });
     }
 
+    const movies = [...movieSet.values()].filter(m => m.overview?.trim() !== "").slice(0, 20);
+
     const recommendations = await Promise.all(
-      movies
-        .filter((movie) => movie.overview && movie.overview.trim() !== "")
-        .slice(0, 10)
-        .map(async (movie) => {
-          const videoRes = await fetch(
-            `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${apiKey}&language=en-EN`
-          );
-          const videoData = await videoRes.json();
-          const trailer = videoData.results?.find(
-            (v) => v.type === "Trailer" && v.site === "YouTube"
-          );
-    
-          return {
-            id: movie.id,
-            title: movie.title,
-            overview: movie.overview,
-            image: movie.poster_path
-              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-              : null,
-            rating: movie.vote_average,
-            trailerUrl: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null,
-          };
-        })
+      movies.map(async (movie) => {
+        const fetchTrailer = async (lang) => {
+          const res = await fetch(`https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${apiKey}&language=${lang}`);
+          const data = await res.json();
+          return data.results?.find((v) => v.type === "Trailer" && v.site === "YouTube");
+        };
+
+        let trailer = await fetchTrailer("ro-RO");
+        if (!trailer) trailer = await fetchTrailer("en-US");
+
+        return {
+          id: movie.id,
+          title: movie.title,
+          overview: movie.overview,
+          image: movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : null,
+          rating: movie.vote_average,
+          trailerUrl: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null,
+        };
+      })
     );
-    
 
     res.status(200).json({ movies: recommendations });
   } catch (error) {

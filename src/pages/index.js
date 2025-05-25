@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "react-hot-toast";
 
 const moodList = ["trist", "fericit", "plictisit", "romantic", "nervos", "curios", "visător", "leneș", "anxios", "nostalgic", "motivat", "relaxat", "euforic", "obosit", "singur", "îndrăgostit", "disperat", "energetic", "rebel", "ciudat", "gânditor", "focusat", "speriat", "încrezător", "calm", "confuz", "dezamăgit", "melancolic", "hiperactiv", "creativ", "entuziasmat"];
 
@@ -37,7 +38,7 @@ export default function Home() {
 
   const handleSubmit = async () => {
     if (!genre && !mood && !seen) {
-      alert("Te rugăm să alegi cel puțin un filtru pentru recomandări.");
+      toast.error("Te rugăm să alegi cel puțin un filtru pentru recomandări.");
       return;
     }
 
@@ -83,6 +84,19 @@ export default function Home() {
         <button onClick={handleSubmit} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition">
           Generează recomandări
         </button>
+        <button
+          onClick={() => {
+            setGenre("");
+            setMood("");
+            setSeen("");
+            setMovies([]);
+            setMoodSuggestions([]);
+          }}
+          className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 rounded-xl transition"
+        >
+          🔄 Resetează filtrele
+        </button>
+
       </div>
 
       {loading && <p className="text-center mt-6">Se încarcă recomandările...</p>}
@@ -111,7 +125,11 @@ export default function Home() {
                         body: JSON.stringify({ ...movie, userId }),
                       });
                       const data = await res.json();
-                      alert(res.ok ? "Adăugat la favorite! ❤️" : data.message || "Eroare la salvare.");
+                      if (res.ok) {
+                        toast.success("Adăugat la favorite! ❤️");
+                      } else {
+                        toast.error(data.message || "Eroare la salvare.");
+                      }
                     }}
                     className="mt-3 w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-lg text-sm"
                   >

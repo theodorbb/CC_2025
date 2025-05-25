@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { toast } from "react-hot-toast";
 import Layout from "@/components/Layout";
 
 export default function Favorites() {
@@ -26,7 +27,7 @@ export default function Favorites() {
     });
 
     if (res.ok) loadFavorites();
-    else alert("Eroare la ștergere.");
+    else toast.error("Eroare la ștergere.");
   };
 
   useEffect(() => {

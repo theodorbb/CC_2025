@@ -41,7 +41,12 @@ export default function Layout({ children }) {
                 <UserButton redirectUrl="/" />
               </SignedIn>
               <SignedOut>
-                <SignInButton />
+                <SignInButton mode="modal">
+                  <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition">
+                    🔐 Intră în cont
+                  </button>
+                </SignInButton>
+
               </SignedOut>
             </div>
           </div>
