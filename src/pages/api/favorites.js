@@ -1,5 +1,4 @@
 import { getCollection } from "../../../utils/functions";
-import { ObjectId } from "mongodb";
 
 const COLLECTION_NAME = "favorites";
 
